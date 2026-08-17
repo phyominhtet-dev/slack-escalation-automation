@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LP Followup Bot - 4-step chase cycle for tracked Slack threads.
+Slack Escalation Automation - 4-step chase cycle for tracked Slack threads.
 Runs via GitHub Actions on schedule.
 """
 
@@ -14,15 +14,20 @@ from datetime import datetime
 SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 TEST_MODE = os.environ.get("TEST_MODE", "false").lower() == "true"
-AI_ENABLED = GROQ_API_KEY is not None
-CHANNEL_IDS = [c.strip() for c in os.environ.get("CHANNEL_IDS", "C0B0S9A3BLZ").split(",")]
+AI_ENABLED = bool(GROQ_API_KEY)
+CHANNEL_IDS = [
+    c.strip()
+    for c in os.environ.get("CHANNEL_IDS", "").split(",")
+    if c.strip()
+]
 
 # User group IDs
-TECH_LOOPBACK_ID = "S0ADNSPAR7S"
-ONCALL_TECH_SUPPORT_ID = "SAUVD9P5J"
+ESCALATION_GROUP_ID = os.environ.get("ESCALATION_GROUP_ID", "")
+ONCALL_GROUP_ID = os.environ.get("ONCALL_GROUP_ID", "")
 
-# Bot user ID (Slack converts @lp-followup-bot to <@U0B07AVHQ2F>)
-BOT_USER_ID = "U0B07AVHQ2F"
+# Bot user ID used to detect direct Slack mentions
+BOT_USER_ID = os.environ.get("BOT_USER_ID", "")
+BOT_NAME = os.environ.get("BOT_NAME", "slack-escalation-bot")
 
 # Timing (seconds) - per step delays
 # Using 10 min (600s) to ensure cron (every 15 min) always catches it
@@ -110,7 +115,7 @@ def ai_summarize_resolution(thread_messages):
         return None
 
     conversation = "\n".join([f"- {m}" for m in thread_messages[-15:]])
-    prompt = f"""Summarize this resolved support thread for ops to reply to client (passenger/driver/merchant).
+    prompt = f"""Summarize this resolved support thread for the support team to provide a resolution update to the requester.
 
 Thread:
 {conversation}
@@ -187,9 +192,9 @@ def get_step_message(step, poster_id, summary=None):
     summary_line = f"\n> _{summary}_\n" if summary else ""
     messages = {
         1: f"<@{poster_id}> - Please check if this issue is resolved.{summary_line}",
-        2: f"<@{poster_id}> <!subteam^{TECH_LOOPBACK_ID}> - Followup: Is this resolved?{summary_line}",
-        3: f"<@{poster_id}> <!subteam^{TECH_LOOPBACK_ID}> <!subteam^{ONCALL_TECH_SUPPORT_ID}> - Followup: Is this resolved?{summary_line}",
-        4: f"<@{poster_id}> <!subteam^{TECH_LOOPBACK_ID}> <!subteam^{ONCALL_TECH_SUPPORT_ID}> - Final followup. Reply \"resolve\" to close.{summary_line}",
+        2: f"<@{poster_id}> <!subteam^{ESCALATION_GROUP_ID}> - Followup: Is this resolved?{summary_line}",
+        3: f"<@{poster_id}> <!subteam^{ESCALATION_GROUP_ID}> <!subteam^{ONCALL_GROUP_ID}> - Followup: Is this resolved?{summary_line}",
+        4: f"<@{poster_id}> <!subteam^{ESCALATION_GROUP_ID}> <!subteam^{ONCALL_GROUP_ID}> - Final followup. Reply \"resolve\" to close.{summary_line}",
     }
     return messages.get(step, messages[1])
 
@@ -198,11 +203,11 @@ def is_bot_mentioned(text):
     """Check if bot is mentioned in text."""
     text_lower = text.lower()
     bot_mention = f"<@{BOT_USER_ID.lower()}>"
-    return bot_mention in text_lower or "@lp-followup-bot" in text_lower
+    return bot_mention in text_lower or f"@{BOT_NAME.lower()}" in text_lower
 
 
 def find_track_commands(state):
-    """Find new @lp-followup-bot track commands in all channels and threads."""
+    """Find new bot track commands in all channels and threads."""
     now = time.time()
     oldest = int(now - (7 * 86400))  # Last 7 days (integer timestamp)
     new_threads = []
@@ -373,7 +378,7 @@ def check_resolve_commands(state):
                 break
 
             # Check for pause command
-            # Match: "@lp-followup-bot pause"
+            # Match: "@<BOT_NAME> pause"
             if is_bot_mentioned(reply.get("text", "")) and "pause" in text:
                 # Reset to step 0 and set last_prompt_time to now - will wait 24h
                 thread["current_step"] = 0
@@ -488,9 +493,9 @@ def run_chase_cycle(state):
 
 
 def main():
-    print(f"LP Followup Bot starting... (TEST_MODE={TEST_MODE})")
-    print(f"Channels: {CHANNEL_IDS}")
 
+    print(f"Channels: {CHANNEL_IDS}")
+    print(f"{BOT_NAME} starting... (TEST_MODE={TEST_MODE})")
     if not SLACK_BOT_TOKEN:
         print("ERROR: SLACK_BOT_TOKEN not set")
         return
