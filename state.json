@@ -1,1 +1,6 @@
-{"threads": {}, "config": {"test_mode": false}}
+{
+  "threads": {},
+  "config": {
+    "test_mode": false
+  }
+}
