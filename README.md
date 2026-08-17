@@ -38,11 +38,12 @@ slack-escalation-automation/
 
 The following environment variables are supported.
 
-## Secrets
+### Secrets
+
+```text
 SLACK_BOT_TOKEN
 GROQ_API_KEY
 
-## Variables
 BOT_USER_ID
 BOT_NAME
 CHANNEL_IDS
@@ -50,120 +51,132 @@ ESCALATION_GROUP_ID
 ONCALL_GROUP_ID
 TEST_MODE
 
-Workspace-specific values should be stored in environment variables or GitHub Secrets/Variables rather than committed to the source code.
+| Variable              | Type     | Description                                         |
+| --------------------- | -------- | --------------------------------------------------- |
+| `SLACK_BOT_TOKEN`     | Secret   | Slack bot OAuth token                               |
+| `GROQ_API_KEY`        | Secret   | Optional API key for AI-assisted summaries          |
+| `BOT_USER_ID`         | Variable | Slack user ID of the bot                            |
+| `BOT_NAME`            | Variable | Slack bot display name                              |
+| `CHANNEL_IDS`         | Variable | Comma-separated Slack channel IDs                   |
+| `ESCALATION_GROUP_ID` | Variable | Slack user group ID for escalation                  |
+| `ONCALL_GROUP_ID`     | Variable | Slack user group ID for on-call escalation          |
+| `TEST_MODE`           | Variable | Enables shortened test intervals when set to `true` |
 
-## Variable Descriptions
-Variable	Type	Description
-SLACK_BOT_TOKEN	Secret	Slack bot OAuth token
-GROQ_API_KEY	Secret	Optional API key for AI-assisted summaries
-BOT_USER_ID	Variable	Slack user ID of the bot
-BOT_NAME	Variable	Slack bot display name
-CHANNEL_IDS	Variable	Comma-separated Slack channel IDs
-ESCALATION_GROUP_ID	Variable	Slack user group ID for escalation
-ONCALL_GROUP_ID	Variable	Slack user group ID for on-call escalation
-TEST_MODE	Variable	Enables shortened test intervals when set to true
-Local Setup
-Clone the repository
+
+## Local Setup
+
+### Clone the repository
+```bash
 git clone https://github.com/phyominhtet-dev/slack-escalation-automation.git
 cd slack-escalation-automation
-Create a virtual environment
+```
+
+### Create a virtual environment
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
-Install dependencies
+```
+
+### Install dependencies
+```bash
 pip install -r requirements.txt
-Configure environment variables
+```
+
+### Configure environment variables
 
 Before running the bot locally, configure the required environment variables.
 
 At minimum:
-
+```text
 SLACK_BOT_TOKEN
 BOT_USER_ID
 BOT_NAME
 CHANNEL_IDS
 ESCALATION_GROUP_ID
 ONCALL_GROUP_ID
+```
 
-GROQ_API_KEY is optional.
+`GROQ_API_KEY` is optional.
 
-Local Testing
-Check Python syntax
+## Local Testing
+
+### Check Python syntax
+```bash
 python -m py_compile bot.py
-Check Git formatting
+```
+
+### Check Git formatting
+```bash
 git diff --check
-Run the bot
+```
+
+### Run the bot
+```bash
 python bot.py
+```
 
-If SLACK_BOT_TOKEN is not configured, the bot exits safely without making Slack API requests.
+If `SLACK_BOT_TOKEN` is not configured, the bot exits safely without making Slack API requests.
 
-GitHub Actions
+## GitHub Actions
 
 The bot runs through GitHub Actions on a scheduled interval.
 
 The workflow:
-
-Checks out the repository.
-Sets up Python.
-Installs dependencies from requirements.txt.
-Loads configuration from GitHub Secrets and Variables.
-Runs bot.py.
+* Checks out the repository.
+* Sets up Python.
+* Installs dependencies from `requirements.txt`.
+* Loads configuration from GitHub Secrets and Variables.
+* Runs `bot.py`.
 
 The default schedule is every 15 minutes.
 
 The workflow can also be triggered manually from:
+`GitHub` → `Actions` → `Slack Escalation Automation` → `Run workflow`
 
-GitHub → Actions → Slack Escalation Automation → Run workflow
-
-GitHub Secrets
+## GitHub Secrets
 
 Configure secrets under:
-
-Repository → Settings → Secrets and variables → Actions → Secrets
+`Repository` → `Settings` → `Secrets and variables` → `Actions` → `Secrets`
 
 Add:
+* `SLACK_BOT_TOKEN`
+* `GROQ_API_KEY`
 
-SLACK_BOT_TOKEN
-GROQ_API_KEY
+`GROQ_API_KEY` is optional if AI-assisted summaries are not required.
 
-GROQ_API_KEY is optional if AI-assisted summaries are not required.
-
-GitHub Variables
+## GitHub Variables
 
 Configure variables under:
-
-Repository → Settings → Secrets and variables → Actions → Variables
+`Repository` → `Settings` → `Secrets and variables` → `Actions` → `Variables`
 
 Add:
+* `BOT_USER_ID`
+* `BOT_NAME`
+* `CHANNEL_IDS`
+* `ESCALATION_GROUP_ID`
+* `ONCALL_GROUP_ID`
 
-BOT_USER_ID
-BOT_NAME
-CHANNEL_IDS
-ESCALATION_GROUP_ID
-ONCALL_GROUP_ID
+`TEST_MODE` is configured by the workflow and can be changed there when required for testing.
 
-TEST_MODE is configured by the workflow and can be changed there when required for testing.
-
-Security
+## Security
 
 Do not commit:
-
-Slack bot tokens
-API keys
-Workspace-specific credentials
-Sensitive runtime data
+* Slack bot tokens
+* API keys
+* Workspace-specific credentials
+* Sensitive runtime data
 
 Store secrets in GitHub Secrets or environment variables.
 
-The .gitignore file also excludes local virtual environments and environment files.
+The `.gitignore` file also excludes local virtual environments and environment files.
 
-Purpose
+## Purpose
 
 This project demonstrates:
-
-Python automation
-Slack API integration
-Environment-based configuration
-Scheduled GitHub Actions
-Multi-step escalation workflows
-Git and GitHub workflow management
-Optional AI-assisted resolution summaries
+* Python automation
+* Slack API integration
+* Environment-based configuration
+* Scheduled GitHub Actions
+* Multi-step escalation workflows
+* Git and GitHub workflow management
+* Optional AI-assisted resolution summaries
