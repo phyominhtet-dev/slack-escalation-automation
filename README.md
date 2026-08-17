@@ -1,52 +1,168 @@
-# LP Followup Bot
+# Slack Escalation Automation
 
-Slack bot that runs a 4-step chase cycle for tracked threads.
+A Python-based Slack automation that tracks escalation threads and sends scheduled follow-up reminders through a configurable multi-step chase cycle.
 
-## How it works
+## How It Works
 
-1. Users type `@lp-followup-bot track` in a thread to start tracking
-2. Bot sends escalating reminders:
-   - Step 1: `@poster - Please check if this issue is resolved.`
-   - Step 2: `@poster @tech-loopback - Followup: Is this resolved?`
-   - Step 3: `@poster @tech-loopback @oncall-tech-support - Followup: Is this resolved?`
-   - Step 4: `@poster @tech-loopback @oncall-tech-support - Final followup. Reply "resolve" to close.`
-3. After step 4, cycle repeats from step 1
-4. Reply "resolve" in thread to stop reminders
+1. A user mentions the configured bot with `track` in a Slack thread.
+2. The bot starts tracking the thread.
+3. The bot sends escalating follow-up reminders through four steps.
+4. After Step 4, the cycle repeats according to the configured behavior.
+5. A `resolve` command stops the follow-up cycle.
+6. A `pause` command can temporarily pause follow-ups.
 
-## Setup
+The bot is configurable through environment variables, so Slack workspace-specific IDs and credentials are not hard-coded into the source code.
 
-### 1. Create GitHub repo
-Create a new **private** repository on GitHub.
+## Follow-up Cycle
 
-### 2. Add Slack bot token as secret
-1. Go to repo Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Name: `SLACK_BOT_TOKEN`
-4. Value: `xoxb-...` (your bot token)
+- **Step 1:** Ask the requester to check whether the issue is resolved.
+- **Step 2:** Notify the requester and escalation group.
+- **Step 3:** Notify the requester, escalation group, and on-call group.
+- **Step 4:** Send a final follow-up and request resolution confirmation.
 
-### 3. Push code
-```bash
-cd ~/lp-followup-bot-github
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/lp-followup-bot.git
-git push -u origin main
-```
+## Project Structure
 
-### 4. Enable GitHub Actions
-1. Go to repo → Actions tab
-2. Click "I understand my workflows, go ahead and enable them"
+```text
+slack-escalation-automation/
+├── .github/
+│   └── workflows/
+│       └── bot.yml
+├── .gitignore
+├── README.md
+├── bot.py
+├── requirements.txt
+└── state.json'''
 
 ## Configuration
 
-Edit `.github/workflows/bot.yml`:
+The following environment variables are supported.
 
-- `cron`: Schedule (default: every 15 minutes)
-- `TEST_MODE`: "true" for 10-min step intervals, "false" for production intervals
-- `CHANNEL_IDS`: Comma-separated list of Slack channel IDs to monitor (e.g., `C0B0S9A3BLZ,C0129EFQPM2`)
+## Secrets
+SLACK_BOT_TOKEN
+GROQ_API_KEY
 
-## Manual trigger
+## Variables
+BOT_USER_ID
+BOT_NAME
+CHANNEL_IDS
+ESCALATION_GROUP_ID
+ONCALL_GROUP_ID
+TEST_MODE
 
-Go to Actions → LP Followup Bot → Run workflow
+Workspace-specific values should be stored in environment variables or GitHub Secrets/Variables rather than committed to the source code.
+
+## Variable Descriptions
+Variable	Type	Description
+SLACK_BOT_TOKEN	Secret	Slack bot OAuth token
+GROQ_API_KEY	Secret	Optional API key for AI-assisted summaries
+BOT_USER_ID	Variable	Slack user ID of the bot
+BOT_NAME	Variable	Slack bot display name
+CHANNEL_IDS	Variable	Comma-separated Slack channel IDs
+ESCALATION_GROUP_ID	Variable	Slack user group ID for escalation
+ONCALL_GROUP_ID	Variable	Slack user group ID for on-call escalation
+TEST_MODE	Variable	Enables shortened test intervals when set to true
+Local Setup
+Clone the repository
+git clone https://github.com/phyominhtet-dev/slack-escalation-automation.git
+cd slack-escalation-automation
+Create a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+Install dependencies
+pip install -r requirements.txt
+Configure environment variables
+
+Before running the bot locally, configure the required environment variables.
+
+At minimum:
+
+SLACK_BOT_TOKEN
+BOT_USER_ID
+BOT_NAME
+CHANNEL_IDS
+ESCALATION_GROUP_ID
+ONCALL_GROUP_ID
+
+GROQ_API_KEY is optional.
+
+Local Testing
+Check Python syntax
+python -m py_compile bot.py
+Check Git formatting
+git diff --check
+Run the bot
+python bot.py
+
+If SLACK_BOT_TOKEN is not configured, the bot exits safely without making Slack API requests.
+
+GitHub Actions
+
+The bot runs through GitHub Actions on a scheduled interval.
+
+The workflow:
+
+Checks out the repository.
+Sets up Python.
+Installs dependencies from requirements.txt.
+Loads configuration from GitHub Secrets and Variables.
+Runs bot.py.
+
+The default schedule is every 15 minutes.
+
+The workflow can also be triggered manually from:
+
+GitHub → Actions → Slack Escalation Automation → Run workflow
+
+GitHub Secrets
+
+Configure secrets under:
+
+Repository → Settings → Secrets and variables → Actions → Secrets
+
+Add:
+
+SLACK_BOT_TOKEN
+GROQ_API_KEY
+
+GROQ_API_KEY is optional if AI-assisted summaries are not required.
+
+GitHub Variables
+
+Configure variables under:
+
+Repository → Settings → Secrets and variables → Actions → Variables
+
+Add:
+
+BOT_USER_ID
+BOT_NAME
+CHANNEL_IDS
+ESCALATION_GROUP_ID
+ONCALL_GROUP_ID
+
+TEST_MODE is configured by the workflow and can be changed there when required for testing.
+
+Security
+
+Do not commit:
+
+Slack bot tokens
+API keys
+Workspace-specific credentials
+Sensitive runtime data
+
+Store secrets in GitHub Secrets or environment variables.
+
+The .gitignore file also excludes local virtual environments and environment files.
+
+Purpose
+
+This project demonstrates:
+
+Python automation
+Slack API integration
+Environment-based configuration
+Scheduled GitHub Actions
+Multi-step escalation workflows
+Git and GitHub workflow management
+Optional AI-assisted resolution summaries
