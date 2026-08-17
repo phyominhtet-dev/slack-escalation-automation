@@ -31,8 +31,9 @@ slack-escalation-automation/
 ├── README.md
 ├── bot.py
 ├── requirements.txt
-└── state.json'''
+└── state.json
 
+```
 ## Configuration
 
 The following environment variables are supported.
