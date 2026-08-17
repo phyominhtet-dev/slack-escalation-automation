@@ -36,7 +36,20 @@ jobs:
           TEST_MODE: "false"
         run: python bot.py
 
-      - name: Comit State
+      - name: Debug State
+        run: |
+          pwd
+          ls -la
+          echo "Checking state.json..."
+          if [ -f state.json ]; then
+            echo "state.json EXISTS"
+            cat state.json
+          else
+            echo "state.json is MISSING"
+          fi
+          git status --short
+
+      - name: Commit State
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
