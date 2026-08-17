@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   run-bot:
@@ -35,3 +35,11 @@ jobs:
           ONCALL_GROUP_ID: ${{ vars.ONCALL_GROUP_ID }}
           TEST_MODE: "false"
         run: python bot.py
+
+      - name: Comit State
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          git diff --staged --quiet || git commit -m "chore: update bot state [skip ci]"
+          git push
