@@ -97,9 +97,9 @@ def ai_summarize_thread(thread_messages):
     prompt = f"""Summarize this Slack thread in ONE short sentence (max 15 words).
 
 Rules:
-- Focus on the operational impact to passenger, driver, or merchant
+- Focus on the operational impact to customer
 - Use plain language, zero technical jargon
-- Be specific about what's affected (e.g., "Driver unable to receive bookings" not "API timeout issue")
+- Be specific about what's affected (e.g., "Customer unable to use internet" not "API timeout issue")
 
 Thread:
 {conversation}
