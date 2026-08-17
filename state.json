@@ -1,5 +1,18 @@
 {
-  "threads": {},
+  "threads": {
+    "C0BQN46465B_1786984793.305509": {
+      "status": "OPEN",
+      "channel_id": "C0BQN46465B",
+      "thread_ts": "1786984793.305509",
+      "poster_id": "U0B4AHU41AS",
+      "tracked_by": "U0B4AHU41AS",
+      "track_command_ts": "1786984980.581719",
+      "first_seen": 1786985006,
+      "current_step": 1,
+      "last_prompt_time": 1786985006,
+      "cycle_count": 1
+    }
+  },
   "config": {
     "test_mode": false
   }
